@@ -10,11 +10,16 @@
 $ git clone https://github.com/fuwa-syugyo/memo_app_fuwa.git
 ```
 
-2. cloneしたディレクトリでアプリケーションを起動してください。
+2. Bundlerを使って必要なGemをインストールしてください。
+```
+$ bundle install   
+```
+
+3. cloneしたディレクトリでアプリケーションを起動してください。
 ```
 $ bundle exec ruby app.rb    
 ```
-3. ローカルホストで以下のURLにアクセスしてください。
+4. ローカルホストで以下のURLにアクセスしてください。
 ```
 http://localhost:4567/memos
 ```
