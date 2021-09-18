@@ -7,7 +7,7 @@
 1. 任意のディレクトリにて git clone してください。
 
 ```
-$ git clone https://github.com/fuwa-syugyo/memo_app.git
+$ git clone https://github.com/fuwa-syugyo/memo_app_fuwa.git
 ```
 
 2. cloneしたディレクトリでアプリケーションを起動してください。
