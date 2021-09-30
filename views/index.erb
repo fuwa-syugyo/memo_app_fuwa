@@ -1,0 +1,11 @@
+<div class="button_01">
+  <a href="/memos/new" class="button_new">新規作成</a>
+</div>
+<div class="memo-list"> 
+    <ul>
+        <% @memo_parse.each do |file|%>
+          <% @memo_url = "/memos/#{file["id"]}" %>
+          <li><a href=<%=  @memo_url %>><%= "#{h file["title"]}" %></a></li>
+        <% end %>
+    </ul>
+</div>

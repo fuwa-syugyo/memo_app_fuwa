@@ -1,0 +1,17 @@
+<h2>編集</h2>
+<br>
+<form action="/memos/<%= h @memo_hash["id"]  %>" method="post">
+  <div class="form-title">
+    <label for="title">タイトル: </label>
+    <input type="text" name="edited_title" id="edited_title" value= "<%= h @memo_hash["title"]  %>" required class="form-title">
+  </div>
+  <p>
+  <div class="form-description">
+    <textarea name="edited_description" id="edited_description" rows="5" cols="40"><%= h @memo_hash["description"] %></textarea>
+  </div>
+  <input type="hidden" name="_method" value="PATCH">
+  <input type="submit" value="変更" class="form-change">
+  <p>
+</form>
+<br>
+<a href="/memos">戻る</a>

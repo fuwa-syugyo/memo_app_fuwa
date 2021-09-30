@@ -17,101 +17,88 @@ helpers do
   end
 end
 
-class Memo
-  attr_accessor :title, :description
-
-  def initialize(title, _disctiption)
-    @title = title
-    @description = description
-  end
-
-  def self.uuid
-    SecureRandom.uuid
-  end
-end
-
 get '/memos' do
-  erb :erb_top_page, locals: { md: markdown(:erb_and_md_template_page) }
+  @memo_parse = File.open(json_file_path) do |file|
+    JSON.parse(file.read)
+  end
+
+  @title = 'トップページ'
+  erb :index, locals: { md: markdown(:md_template) }
 end
 
 get '/memos/new' do
-  erb :erb_new_memo_page, locals: { md: markdown(:erb_and_md_template_page) }
+  @title = '新規作成'
+  erb :new, locals: { md: markdown(:md_template) }
 end
 
 post '/memos' do
-  @title = params[:title]
-  @description = params[:description]
+  title = params[:title]
+  description = params[:description]
 
-  memo_cul = File.open(json_file_path) do |io|
-    JSON.parse(io.read)
+  memo_parse = File.open(json_file_path) do |file|
+    JSON.parse(file.read)
   end
 
   File.open(json_file_path, 'w') do |file|
-    hash_array = memo_cul.to_a
+    hash_array = memo_parse.to_a
 
-    hash = { id: Memo.uuid, title: @title, description: @description }
+    hash = { id: SecureRandom.uuid, title: title, description: description }
     hash_array << hash
     JSON.dump(hash_array, file)
   end
 
-  redirect 'http://localhost:4567/memos'
-  erb :erb_top_page, locals: { md: markdown(:erb_and_md_template_page) }
+  redirect '/memos'
 end
 
 get '/memos/:id' do
-  erb :erb_show_memo_page, locals: { md: markdown(:erb_and_md_template_page) }
+  memo_parse = File.open(json_file_path) do |file|
+    JSON.parse(file.read)
+  end
+  @memo_hash = memo_parse.find { |hash| hash['id'] == params[:id] }
+
+  @title = '詳細'
+  erb :show, locals: { md: markdown(:md_template) }
 end
 
 get '/memos/:id/edit' do
-  @id = params[:id]
-
   buffer = File.open(json_file_path, 'r') do |file|
     JSON.parse(file.read)
   end
-  @memo_hash = buffer.find { |hash| hash['id'] == @id }
+  @memo_hash = buffer.find { |hash| hash['id'] == params[:id] }
 
-  erb :erb_edit_memo_page, locals: { md: markdown(:erb_and_md_template_page) }
+  @title = '編集'
+  erb :edit, locals: { md: markdown(:md_template) }
 end
 
 patch '/memos/:id' do
-  @id = params[:id]
-  @edited_title = params[:edited_title]
-  @edited_description = params[:edited_description]
-  cur_url = request.path.delete_prefix('/memos/')
+  edited_title = params[:edited_title]
+  edited_description = params[:edited_description]
 
-  memo_data = File.open(json_file_path) do |io|
-    JSON.parse(io.read)
+  memo_data = File.open(json_file_path) do |file|
+    JSON.parse(file.read)
   end
 
-  memo_hash = memo_data.find { |hash| hash['id'] == cur_url }
+  memo_hash = memo_data.find { |hash| hash['id'] == params[:id] }
+  memo_hash['title'] = edited_title
+  memo_hash['description'] = edited_description
 
-  memo_hash['title'] = @edited_title
-  memo_hash['description'] = @edited_description
-
-  File.open(json_file_path, 'w') do |io|
-    JSON.dump(memo_data, io)
+  File.open(json_file_path, 'w') do |file|
+    JSON.dump(memo_data, file)
   end
 
-  redirect redirect 'http://localhost:4567/memos'
-  erb :erb_top_page, locals: { md: markdown(:erb_and_md_template_page) }
+  redirect redirect '/memos'
 end
 
 delete '/memos/:id' do
-  cur_url = request.path.delete_prefix('/memos/')
-
-  memo_data = File.open(json_file_path) do |io|
-    JSON.parse(io.read)
+  memo_data = File.open(json_file_path) do |file|
+    JSON.parse(file.read)
   end
 
-  memo_data.delete_if { |hash| hash['id'] == cur_url }
+  memo_data.delete_if { |hash| hash['id'] == params[:id] }
 
-  File.open(json_file_path, 'w') do |io|
-    JSON.dump(memo_data, io)
+  File.open(json_file_path, 'w') do |file|
+    JSON.dump(memo_data, file)
   end
 
-  redirect 'http://localhost:4567/memos'
-end
-
-not_found do
-  erb :notFound
+  redirect '/memos'
 end

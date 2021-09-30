@@ -172,7 +172,6 @@ textarea {
 .button_new  {
   display: block;
   justify-content: space-between;
-  margin: 0 auto;
   padding: 1em 2em;
   width: 200px;
   color: rgb(255, 255, 255);
@@ -202,22 +201,13 @@ textarea {
   transition: .3s;
   box-shadow: 1px 1px 3px #666666;
   border: 2px solid #ffff4d;
-  margin-left: 6px;
+  margin-top: 16px;
 }
 .form-example-submit:hover {
   box-shadow: none;
   color: #ffff4d;
   background: #000066;
 }
-
-/*.inline-flex {
-  padding: 10px 0;
-  border-radius: 16%;
-  line-height: 1em;
-  transition: .3s;
-  box-shadow: 1px 1px 3px #666666;
-  float: left;
-}*/
 
 .form-modify, .form-delete, .form-change{
   display: inline-block;
@@ -229,7 +219,7 @@ textarea {
   line-height: 1em;
   transition: .3s;
   box-shadow: 1px 1px 3px #4399fa6e;
-  margin-left: 6px;
+  margin-left: 26px;
 }
 
 .form-modify {
