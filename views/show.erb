@@ -2,7 +2,7 @@
 <br>
 <p><%=@memo_hash["description"]%></p>
     <ul>                       
-      <div style="display:inline-flex">
+      <div class="form-buttons">
         <form action="/memos/<%= "#{h @memo_hash["id"]}/edit" %>" method="get"> 
           <input type="submit" value="変更" class="form-modify">
         </form>

@@ -222,6 +222,10 @@ textarea {
   margin-left: 26px;
 }
 
+.form-buttons {
+  display: flex;
+}
+
 .form-modify {
   background: #4362f0e3;
   color: #ffffff;
