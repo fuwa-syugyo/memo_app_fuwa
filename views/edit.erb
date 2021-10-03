@@ -1,13 +1,13 @@
 <h2>編集</h2>
 <br>
-<form action="/memos/<%= h @memo_hash["id"]  %>" method="post">
+<form action="/memos/<%= h @memo["id"]  %>" method="post">
   <div class="form-title">
     <label for="title">タイトル: </label>
-    <input type="text" name="edited_title" id="edited_title" value= "<%= h @memo_hash["title"]  %>" required class="form-title">
+    <input type="text" name="edited_title" id="edited_title" value= "<%= h @memo["title"]  %>" required class="form-title">
   </div>
   <p>
   <div class="form-description">
-    <textarea name="edited_description" id="edited_description" rows="5" cols="40"><%= h @memo_hash["description"] %></textarea>
+    <textarea name="edited_description" id="edited_description" rows="5" cols="40"><%= h @memo["description"] %></textarea>
   </div>
   <input type="hidden" name="_method" value="PATCH">
   <input type="submit" value="変更" class="form-change">
