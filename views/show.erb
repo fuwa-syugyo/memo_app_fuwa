@@ -1,12 +1,12 @@
-<h2><%=@memo["title"]%></h2>
+<h2><%=@memo_hash["title"]%></h2>
 <br>
-<p><%=@memo["description"]%></p>
+<p><%=@memo_hash["description"]%></p>
     <ul>                       
       <div class="form-buttons">
-        <form action="/memos/<%= "#{h @memo["id"]}/edit" %>" method="get"> 
+        <form action="/memos/<%= "#{h @memo_hash["id"]}/edit" %>" method="get"> 
           <input type="submit" value="変更" class="form-modify">
         </form>
-        <form action="/memos/<%= "#{h @memo["id"]}" %>" method="post">
+        <form action="/memos/<%= "#{h @memo_hash["id"]}" %>" method="post">
           <input type="hidden" name="_method" value="DELETE">
           <input type="submit" value="削除" class="form-delete">
         </form>
