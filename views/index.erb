@@ -3,9 +3,8 @@
 </div>
 <div class="memo-list"> 
     <ul>
-        <% @memo_parse.each do |file|%>
-          <% @memo_url = "/memos/#{file["id"]}" %>
-          <li><a href=<%=  @memo_url %>><%= "#{h file["title"]}" %></a></li>
-        <% end %>
+      <% @memos.each do |memo|%>
+        <li><a href=<%=  "/memos/#{memo["id"]}" %>><%= "#{h memo["title"]}" %></a></li>
+      <% end %> 
     </ul>
 </div>

@@ -8,7 +8,6 @@ require 'securerandom'
 require 'erb'
 enable :method_override
 
-hash_array = []
 json_file_path = 'memo.json'
 
 helpers do
@@ -17,10 +16,27 @@ helpers do
   end
 end
 
-get '/memos' do
-  @memo_parse = File.open(json_file_path) do |file|
-    JSON.parse(file.read)
+class Memo
+  attr_accessor :title, :description
+
+  def initialize(title, _disctiption)
+    @title = title
+    @description = description
   end
+
+  def self.uuid
+    SecureRandom.uuid
+  end
+
+  def self.find_all
+    File.open('memo.json') do |file|
+      JSON.parse(file.read)
+    end
+  end
+end
+
+get '/memos' do
+  @memos = Memo.find_all
 
   @title = 'トップページ'
   erb :index, locals: { md: markdown(:md_template) }
@@ -34,70 +50,57 @@ end
 post '/memos' do
   title = params[:title]
   description = params[:description]
-
-  memo_parse = File.open(json_file_path) do |file|
-    JSON.parse(file.read)
-  end
+  memos = Memo.find_all
 
   File.open(json_file_path, 'w') do |file|
-    hash_array = memo_parse.to_a
-
-    hash = { id: SecureRandom.uuid, title: title, description: description }
-    hash_array << hash
-    JSON.dump(hash_array, file)
+    memo = { id: Memo.uuid, title: title, description: description }
+    memos << memo
+    JSON.dump(memos, file)
   end
 
   redirect '/memos'
 end
 
 get '/memos/:id' do
-  memo_parse = File.open(json_file_path) do |file|
-    JSON.parse(file.read)
-  end
-  @memo_hash = memo_parse.find { |hash| hash['id'] == params[:id] }
+  memos = Memo.find_all
+  @memo = memos.find { |hash| hash['id'] == params[:id] }
 
   @title = '詳細'
   erb :show, locals: { md: markdown(:md_template) }
 end
 
 get '/memos/:id/edit' do
-  buffer = File.open(json_file_path, 'r') do |file|
-    JSON.parse(file.read)
-  end
-  @memo_hash = buffer.find { |hash| hash['id'] == params[:id] }
+  memos = Memo.find_all
+  @memo = memos.find { |hash| hash['id'] == params[:id] }
 
   @title = '編集'
   erb :edit, locals: { md: markdown(:md_template) }
 end
 
 patch '/memos/:id' do
+  memos = Memo.find_all
+
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
 
-  memo_data = File.open(json_file_path) do |file|
-    JSON.parse(file.read)
-  end
-
-  memo_hash = memo_data.find { |hash| hash['id'] == params[:id] }
-  memo_hash['title'] = edited_title
-  memo_hash['description'] = edited_description
+  memo = memos.find { |hash| hash['id'] == params[:id] }
+  memo['title'] = edited_title
+  memo['description'] = edited_description
 
   File.open(json_file_path, 'w') do |file|
-    JSON.dump(memo_data, file)
+    JSON.dump(memos, file)
   end
 
   redirect redirect '/memos'
 end
 
 delete '/memos/:id' do
-  memo_data = File.open(json_file_path) do |file|
-    JSON.parse(file.read)
-  end
+  memos = Memo.find_all
 
-  memo_data.delete_if { |hash| hash['id'] == params[:id] }
+  memos.delete_if { |hash| hash['id'] == params[:id] }
 
   File.open(json_file_path, 'w') do |file|
-    JSON.dump(memo_data, file)
+    JSON.dump(memos, file)
   end
 
   redirect '/memos'
