@@ -17,13 +17,6 @@ helpers do
 end
 
 class Memo
-  attr_accessor :title, :description
-
-  def initialize(title, _disctiption)
-    @title = title
-    @description = description
-  end
-
   def self.uuid
     SecureRandom.uuid
   end
@@ -63,7 +56,7 @@ end
 
 get '/memos/:id' do
   memos = Memo.find_all
-  @memo = memos.find { |hash| hash['id'] == params[:id] }
+  @memo = memos.find { |file| file['id'] == params[:id] }
 
   @title = '詳細'
   erb :show, locals: { md: markdown(:md_template) }
@@ -71,7 +64,7 @@ end
 
 get '/memos/:id/edit' do
   memos = Memo.find_all
-  @memo = memos.find { |hash| hash['id'] == params[:id] }
+  @memo = memos.find { |file| file['id'] == params[:id] }
 
   @title = '編集'
   erb :edit, locals: { md: markdown(:md_template) }
@@ -83,7 +76,7 @@ patch '/memos/:id' do
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
 
-  memo = memos.find { |hash| hash['id'] == params[:id] }
+  memo = memos.find { |file| file['id'] == params[:id] }
   memo['title'] = edited_title
   memo['description'] = edited_description
 
@@ -97,7 +90,7 @@ end
 delete '/memos/:id' do
   memos = Memo.find_all
 
-  memos.delete_if { |hash| hash['id'] == params[:id] }
+  memos.delete_if { |file| file['id'] == params[:id] }
 
   File.open(json_file_path, 'w') do |file|
     JSON.dump(memos, file)
