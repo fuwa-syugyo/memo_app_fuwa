@@ -56,7 +56,7 @@ end
 
 get '/memos/:id' do
   memos = Memo.find_all
-  @memo = memos.find { |file| file['id'] == params[:id] }
+  @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '詳細'
   erb :show, locals: { md: markdown(:md_template) }
@@ -64,7 +64,7 @@ end
 
 get '/memos/:id/edit' do
   memos = Memo.find_all
-  @memo = memos.find { |file| file['id'] == params[:id] }
+  @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '編集'
   erb :edit, locals: { md: markdown(:md_template) }
@@ -76,7 +76,7 @@ patch '/memos/:id' do
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
 
-  memo = memos.find { |file| file['id'] == params[:id] }
+  memo = memos.find { |memo| memo['id'] == params[:id] }
   memo['title'] = edited_title
   memo['description'] = edited_description
 
@@ -90,7 +90,7 @@ end
 delete '/memos/:id' do
   memos = Memo.find_all
 
-  memos.delete_if { |file| file['id'] == params[:id] }
+  memos.delete_if { |memo| memo['id'] == params[:id] }
 
   File.open(json_file_path, 'w') do |file|
     JSON.dump(memos, file)
