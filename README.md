@@ -15,11 +15,29 @@ $ git clone https://github.com/fuwa-syugyo/memo_app_fuwa.git
 $ bundle install   
 ```
 
-3. cloneしたディレクトリでアプリケーションを起動してください。
+3. `memo`DBを作成し、接続してください。
+```
+$ createdb memo -O {user_name};    
+```
+
+```
+$ psql -d memo   
+```
+
+4. `memos`テーブルを作成してください。
+```
+$ CREATE TABLE memos
+(id serial,
+title text not null,
+description text,
+PRIMARY KEY(id));
+```
+
+5. cloneしたディレクトリでアプリケーションを起動してください。
 ```
 $ bundle exec ruby app.rb    
 ```
-4. ローカルホストで以下のURLにアクセスしてください。
+6. ローカルホストで以下のURLにアクセスしてください。
 ```
 http://localhost:4567/memos
 ```

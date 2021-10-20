@@ -6,9 +6,8 @@ require 'sinatra/reloader'
 require 'json'
 require 'securerandom'
 require 'erb'
+require 'pg'
 enable :method_override
-
-json_file_path = 'memo.json'
 
 helpers do
   def h(text)
@@ -17,14 +16,33 @@ helpers do
 end
 
 class Memo
-  def self.uuid
-    SecureRandom.uuid
+  def self.find_all
+    memo_array = []
+    conn = PG.connect(dbname: 'memo')
+    conn.exec('SELECT * FROM memos') do |result|
+      result.each do |row|
+        memo_array << row
+      end
+    end
+    memo_array
   end
 
-  def self.find_all
-    File.open('memo.json') do |file|
-      JSON.parse(file.read)
-    end
+  def self.create_memo(title, description)
+    connection = PG.connect(dbname: 'memo')
+    connection.prepare('statement1', 'INSERT INTO memos (title, description) values ($1, $2)')
+    connection.exec_prepared('statement1', [title, description])
+  end
+
+  def self.update_memo(id, title, description)
+    connection = PG.connect(dbname: 'memo')
+    connection.prepare('statement1', 'UPDATE memos SET title = $1, description = $2 WHERE id = $3')
+    connection.exec_prepared('statement1', [title, description, id])
+  end
+
+  def self.delete_memo(id)
+    connection = PG.connect(dbname: 'memo')
+    connection.prepare('statement1', 'DELETE FROM memos WHERE id = $1')
+    connection.exec_prepared('statement1', [id])
   end
 end
 
@@ -41,15 +59,7 @@ get '/memos/new' do
 end
 
 post '/memos' do
-  title = params[:title]
-  description = params[:description]
-  memos = Memo.find_all
-
-  File.open(json_file_path, 'w') do |file|
-    memo = { id: Memo.uuid, title: title, description: description }
-    memos << memo
-    JSON.dump(memos, file)
-  end
+  Memo.create_memo(params[:title], params[:description])
 
   redirect '/memos'
 end
@@ -72,29 +82,19 @@ end
 
 patch '/memos/:id' do
   memos = Memo.find_all
-
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
+  memo_data = memos.find { |memo| memo['id'] == params[:id] }
+  memo_data['title'] = edited_title
+  memo_data['description'] = edited_description
 
-  memo = memos.find { |memo| memo['id'] == params[:id] }
-  memo['title'] = edited_title
-  memo['description'] = edited_description
-
-  File.open(json_file_path, 'w') do |file|
-    JSON.dump(memos, file)
-  end
+  Memo.update_memo(params[:id], edited_title, edited_description)
 
   redirect redirect '/memos'
 end
 
 delete '/memos/:id' do
-  memos = Memo.find_all
-
-  memos.delete_if { |memo| memo['id'] == params[:id] }
-
-  File.open(json_file_path, 'w') do |file|
-    JSON.dump(memos, file)
-  end
+  Memo.delete_memo(params[:id])
 
   redirect '/memos'
 end
