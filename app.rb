@@ -9,6 +9,8 @@ require 'erb'
 require 'pg'
 enable :method_override
 
+connection = PG.connect(dbname: 'memo')
+
 helpers do
   def h(text)
     Rack::Utils.escape_html(text)
@@ -16,38 +18,39 @@ helpers do
 end
 
 class Memo
-  def self.find_all
-    memo_array = []
-    conn = PG.connect(dbname: 'memo')
-    conn.exec('SELECT * FROM memos') do |result|
-      result.each do |row|
-        memo_array << row
+  def self.find_all(connection)
+    # connection = PG.connect(dbname: 'memo')
+    connection.exec('SELECT * FROM memos') do |result|
+      result.map do |row|
+        row
       end
     end
-    memo_array
   end
 
-  def self.create_memo(title, description)
-    connection = PG.connect(dbname: 'memo')
-    connection.prepare('statement1', 'INSERT INTO memos (title, description) values ($1, $2)')
-    connection.exec_prepared('statement1', [title, description])
+  def self.create_memo(connection, title, description)
+    # connection = PG.connect(dbname: 'memo')
+    # connection.prepare('statement1', 'INSERT INTO memos (title, description) values ($1, $2)')
+    # connection.exec_prepared('statement1', [title, description])
+    connection.exec('INSERT INTO memos (title, description) values ($1, $2)', [title, description])
   end
 
-  def self.update_memo(id, title, description)
-    connection = PG.connect(dbname: 'memo')
-    connection.prepare('statement1', 'UPDATE memos SET title = $1, description = $2 WHERE id = $3')
-    connection.exec_prepared('statement1', [title, description, id])
+  def self.update_memo(connection, id, title, description)
+    # connection = PG.connect(dbname: 'memo')
+    # connection.prepare('statement1', 'UPDATE memos SET title = $1, description = $2 WHERE id = $3')
+    # connection.exec_prepared('statement1', [title, description, id])
+    connection.exec('UPDATE memos SET title = $1, description = $2 WHERE id = $3', [title, description, id])
   end
 
-  def self.delete_memo(id)
-    connection = PG.connect(dbname: 'memo')
-    connection.prepare('statement1', 'DELETE FROM memos WHERE id = $1')
-    connection.exec_prepared('statement1', [id])
+  def self.delete_memo(connection, id)
+    # connection = PG.connect(dbname: 'memo')
+    # connection.prepare('statement1', 'DELETE FROM memos WHERE id = $1')
+    # connection.exec_prepared('statement1', [id])
+    connection.exec('DELETE FROM memos WHERE id = $1', [id])
   end
 end
 
 get '/memos' do
-  @memos = Memo.find_all
+  @memos = Memo.find_all(connection)
 
   @title = 'トップページ'
   erb :index, locals: { md: markdown(:md_template) }
@@ -59,13 +62,13 @@ get '/memos/new' do
 end
 
 post '/memos' do
-  Memo.create_memo(params[:title], params[:description])
+  Memo.create_memo(connection, params[:title], params[:description])
 
   redirect '/memos'
 end
 
 get '/memos/:id' do
-  memos = Memo.find_all
+  memos = Memo.find_all(connection)
   @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '詳細'
@@ -73,7 +76,7 @@ get '/memos/:id' do
 end
 
 get '/memos/:id/edit' do
-  memos = Memo.find_all
+  memos = Memo.find_all(connection)
   @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '編集'
@@ -81,20 +84,20 @@ get '/memos/:id/edit' do
 end
 
 patch '/memos/:id' do
-  memos = Memo.find_all
+  memos = Memo.find_all(connection)
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
   memo_data = memos.find { |memo| memo['id'] == params[:id] }
   memo_data['title'] = edited_title
   memo_data['description'] = edited_description
 
-  Memo.update_memo(params[:id], edited_title, edited_description)
+  Memo.update_memo(connection, params[:id], edited_title, edited_description)
 
   redirect redirect '/memos'
 end
 
 delete '/memos/:id' do
-  Memo.delete_memo(params[:id])
+  Memo.delete_memo(connection, params[:id])
 
   redirect '/memos'
 end
