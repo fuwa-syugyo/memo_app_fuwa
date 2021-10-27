@@ -6,9 +6,10 @@ require 'sinatra/reloader'
 require 'json'
 require 'securerandom'
 require 'erb'
+require 'pg'
 enable :method_override
 
-json_file_path = 'memo.json'
+connection = PG.connect(dbname: 'memo')
 
 helpers do
   def h(text)
@@ -17,26 +18,29 @@ helpers do
 end
 
 class Memo
-  attr_accessor :title, :description
-
-  def initialize(title, _disctiption)
-    @title = title
-    @description = description
-  end
-
-  def self.uuid
-    SecureRandom.uuid
-  end
-
-  def self.find_all
-    File.open('memo.json') do |file|
-      JSON.parse(file.read)
+  def self.find_all(connection)
+    connection.exec('SELECT * FROM memos') do |result|
+      result.map do |row|
+        row
+      end
     end
+  end
+
+  def self.create_memo(connection, title, description)
+    connection.exec('INSERT INTO memos (title, description) values ($1, $2)', [title, description])
+  end
+
+  def self.update_memo(connection, id, title, description)
+    connection.exec('UPDATE memos SET title = $1, description = $2 WHERE id = $3', [title, description, id])
+  end
+
+  def self.delete_memo(connection, id)
+    connection.exec('DELETE FROM memos WHERE id = $1', [id])
   end
 end
 
 get '/memos' do
-  @memos = Memo.find_all
+  @memos = Memo.find_all(connection)
 
   @title = 'トップページ'
   erb :index, locals: { md: markdown(:md_template) }
@@ -48,60 +52,42 @@ get '/memos/new' do
 end
 
 post '/memos' do
-  title = params[:title]
-  description = params[:description]
-  memos = Memo.find_all
-
-  File.open(json_file_path, 'w') do |file|
-    memo = { id: Memo.uuid, title: title, description: description }
-    memos << memo
-    JSON.dump(memos, file)
-  end
+  Memo.create_memo(connection, params[:title], params[:description])
 
   redirect '/memos'
 end
 
 get '/memos/:id' do
-  memos = Memo.find_all
-  @memo = memos.find { |hash| hash['id'] == params[:id] }
+  memos = Memo.find_all(connection)
+  @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '詳細'
   erb :show, locals: { md: markdown(:md_template) }
 end
 
 get '/memos/:id/edit' do
-  memos = Memo.find_all
-  @memo = memos.find { |hash| hash['id'] == params[:id] }
+  memos = Memo.find_all(connection)
+  @memo = memos.find { |memo| memo['id'] == params[:id] }
 
   @title = '編集'
   erb :edit, locals: { md: markdown(:md_template) }
 end
 
 patch '/memos/:id' do
-  memos = Memo.find_all
-
+  memos = Memo.find_all(connection)
   edited_title = params[:edited_title]
   edited_description = params[:edited_description]
+  memo_data = memos.find { |memo| memo['id'] == params[:id] }
+  memo_data['title'] = edited_title
+  memo_data['description'] = edited_description
 
-  memo = memos.find { |hash| hash['id'] == params[:id] }
-  memo['title'] = edited_title
-  memo['description'] = edited_description
-
-  File.open(json_file_path, 'w') do |file|
-    JSON.dump(memos, file)
-  end
+  Memo.update_memo(connection, params[:id], edited_title, edited_description)
 
   redirect redirect '/memos'
 end
 
 delete '/memos/:id' do
-  memos = Memo.find_all
-
-  memos.delete_if { |hash| hash['id'] == params[:id] }
-
-  File.open(json_file_path, 'w') do |file|
-    JSON.dump(memos, file)
-  end
+  Memo.delete_memo(connection, params[:id])
 
   redirect '/memos'
 end
