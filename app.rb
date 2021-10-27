@@ -19,7 +19,6 @@ end
 
 class Memo
   def self.find_all(connection)
-    # connection = PG.connect(dbname: 'memo')
     connection.exec('SELECT * FROM memos') do |result|
       result.map do |row|
         row
@@ -28,23 +27,14 @@ class Memo
   end
 
   def self.create_memo(connection, title, description)
-    # connection = PG.connect(dbname: 'memo')
-    # connection.prepare('statement1', 'INSERT INTO memos (title, description) values ($1, $2)')
-    # connection.exec_prepared('statement1', [title, description])
     connection.exec('INSERT INTO memos (title, description) values ($1, $2)', [title, description])
   end
 
   def self.update_memo(connection, id, title, description)
-    # connection = PG.connect(dbname: 'memo')
-    # connection.prepare('statement1', 'UPDATE memos SET title = $1, description = $2 WHERE id = $3')
-    # connection.exec_prepared('statement1', [title, description, id])
     connection.exec('UPDATE memos SET title = $1, description = $2 WHERE id = $3', [title, description, id])
   end
 
   def self.delete_memo(connection, id)
-    # connection = PG.connect(dbname: 'memo')
-    # connection.prepare('statement1', 'DELETE FROM memos WHERE id = $1')
-    # connection.exec_prepared('statement1', [id])
     connection.exec('DELETE FROM memos WHERE id = $1', [id])
   end
 end
